@@ -1,0 +1,170 @@
+{
+  "name": "AirRaid",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.9.8.25/api/custom",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "Alarm"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2894d48a-0970-4b4c-a12e-8274338057ab",
+      "name": "Remove App",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        540,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://ubilling.net.ua/aerialalerts/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c352063a-d57e-4744-8bf1-6a20938c66f4",
+      "name": "Fetch HTML Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        340,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the data from the previous node\nconst data = items[0].json;\n\n// Access the \"м. Київ\" alert status\nconst kyivAlert = data.states[\"м. Київ\"];\n\n// Prepare the output\nreturn [{\n  json: {\n    city: \"м. Київ\",\n    alertnow: kyivAlert.alertnow,\n    changed: kyivAlert.changed\n  }\n}];"
+      },
+      "id": "7c6dce3b-d1b7-46ee-92cd-766ad0e4e10f",
+      "name": "Extract Follower Count",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        540,
+        700
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.9.8.25/api/custom",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "Alarm"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "= {{ $json.alertnow }}"
+            },
+            {
+              "name": "icon",
+              "value": "29246"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "822b7fd3-9690-4083-a9b6-e9156589c2ce",
+      "name": "Send to Clock",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        740,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "3856fef7-4322-454a-8798-c8fad7c07461",
+      "name": "Every 1 Min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        140,
+        700
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch HTML Data": {
+      "main": [
+        [
+          {
+            "node": "Extract Follower Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Follower Count": {
+      "main": [
+        [
+          {
+            "node": "Send to Clock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every 55 Min": {
+      "main": [
+        [
+          {
+            "node": "Fetch HTML Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3438ebc3-deb6-41e7-94b2-54971cae9635",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a41e728e4a07eb1514d766cd0003eeedf3874ea2582c18e005c1891613f2237f"
+  },
+  "id": "4X3fP7CtnbKwF12s",
+  "tags": []
+}
