@@ -1,0 +1,170 @@
+{
+  "name": "TikTok-AWTRIX",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.9.8.25/api/custom",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "tiktok"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "46756427-d1b8-4d6f-a73a-4e05d1ff78c5",
+      "name": "Remove App",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        540,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://www.tiktok.com/@sylatoka?is_copy_url=1&is_from_webapp=v1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b48d3949-5a40-4002-b022-15d308cd88f7",
+      "name": "Fetch HTML Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        340,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const regex = /\"followerCount\":(\\d+\\.?\\d*[MK]?),\"followingCount\"/;\nconst match = regex.exec(items[0].json.data);\nif (match) {\n    const followerCount = parseInt(match[1]);\n    return { followerCount };\n} else {\n    return { followerCount: \"N/A\" };\n}"
+      },
+      "id": "3ed5a535-fa62-4f99-a839-dc641010ee10",
+      "name": "Extract Follower Count",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        540,
+        700
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://10.9.8.25/api/custom",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "tiktok"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "= {{ $json.followerCount }}"
+            },
+            {
+              "name": "icon",
+              "value": "35685"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b5d8bfbf-52dc-43ba-8d6a-404d205cd849",
+      "name": "Send to Clock",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        740,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 55
+            }
+          ]
+        }
+      },
+      "id": "30f794ed-7013-490a-8cd9-b75ecd87c7cb",
+      "name": "Every 55 Min",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        140,
+        700
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch HTML Data": {
+      "main": [
+        [
+          {
+            "node": "Extract Follower Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Follower Count": {
+      "main": [
+        [
+          {
+            "node": "Send to Clock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every 55 Min": {
+      "main": [
+        [
+          {
+            "node": "Fetch HTML Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6bf9dea7-9e44-4a21-9014-c9560a825faf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a41e728e4a07eb1514d766cd0003eeedf3874ea2582c18e005c1891613f2237f"
+  },
+  "id": "khAyXe7YZMBhMumZ",
+  "tags": []
+}
